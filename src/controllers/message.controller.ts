@@ -9,13 +9,21 @@ export class MessageController {
   }
 
   @Post('echoAtTime')
-  echoAtTime(@Body() messageDto: MessageDto): ServerResponse<MessageDto> {
+  echoAtTime(@Body() messageDto: MessageDto): ServerResponse<boolean> {
     try {
       // TODO: validate input and decide on time format
+      const res = this.messageService.echoAtTime(messageDto)
+      if (!res) {
+        return {
+          err: 1,
+          msg: 'Something went wrong, please try again',
+        }
+      }
+
       return {
         err: 0,
         msg: 'Wrote message successfully',
-        data: this.messageService.echoAtTime(messageDto),
+        data: res
       }
 
     } catch (e) {

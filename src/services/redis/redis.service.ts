@@ -27,8 +27,18 @@ export class RedisService {
     })
   }
 
-  public set(input: any) {
-    this.client.set('Nir', JSON.stringify(input), redis.print)
+  public set(input: {
+    key: string,
+    val: string,
+    expInSeconds?: number
+  }): boolean {
+    if (input.expInSeconds) {
+      this.client.set(input.key, input.val, 'EX', input.expInSeconds, redis.print)
+    } else {
+      this.client.set(input.key, input.val, redis.print)
+    }
+
+    return true
   }
 
 }
