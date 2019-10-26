@@ -19,3 +19,8 @@ export class MessageDto {
   @ApiModelProperty()
   message: string
 }
+
+export interface RedisConfig  {
+  host: string
+  port: number
+}

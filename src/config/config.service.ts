@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv'
 import * as Joi from '@hapi/joi'
 import * as fs from 'fs'
-import { EnvConfig } from '../common/common'
+import { EnvConfig, RedisConfig } from '../common/common'
 
 export class ConfigService {
   private readonly envConfig: EnvConfig
@@ -23,6 +23,13 @@ export class ConfigService {
     return this.get('NODE_ENV')
   }
 
+  get redisConfig(): RedisConfig {
+    return {
+      host: this.get('REDIS_HOST'),
+      port: Number(this.get('REDIS_PORT')),
+    }
+  }
+
   /**
    * Ensures all needed variables are set, and returns the validated JavaScript object
    * including the applied default values.
@@ -32,9 +39,14 @@ export class ConfigService {
       NODE_ENV: Joi.string()
         .valid('development', 'docker')
         .default('development'),
-      PORT: Joi.number().default(3000),
+      PORT: Joi.number()
+        .default(3000),
       SWAGGER_SCHEMA: Joi.string()
         .valid('http', 'https')
+        .required(),
+      REDIS_HOST: Joi.string()
+        .required(),
+      REDIS_PORT: Joi.number()
         .required(),
     })
 

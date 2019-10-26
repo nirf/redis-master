@@ -26,6 +26,7 @@
     "@nestjs/swagger": "^3.0.2",
     "dotenv": "^8.2.0",
     "inspirational-quotes": "^1.0.8",
+    "redis": "^2.8.0",
     "reflect-metadata": "^0.1.12",
     "rimraf": "^2.6.2",
     "rxjs": "^6.2.2",
