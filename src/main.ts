@@ -6,8 +6,6 @@ import { ConfigService } from './config/config.service'
 import { ConfigModule } from './config/config.module'
 
 async function bootstrap() {
-  // TODO: add detailed readme file that explaines the program
-  // and add docker and docker-compose file to easily run the program
   const app = await NestFactory.create(AppModule)
   app.setGlobalPrefix(constants.globalPrefix)
 

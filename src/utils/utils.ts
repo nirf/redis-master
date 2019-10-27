@@ -11,3 +11,7 @@ export function getDateDiffInSeconds(preDate, postDate) {
 export function generateUniqueUUID() {
   return uuidv1()
 }
+
+export function generateOpaqueKey(key: string) {
+  return `opaque:${key}`
+}

@@ -12,20 +12,13 @@ export class MessageService {
   public echoAtTime(messageDto: MessageDto): boolean {
     const diffInSeconds = utils.getDateDiffInSeconds(new Date().getTime(), messageDto.time)
     const key = utils.generateUniqueUUID()
-    const opaqueKey = this.generateOpaqueKey(key)
-    // TODO: do this 2 actions as atomic operation (i.e transaction)
-    return this.redisService.set({
+    const opaqueKey = utils.generateOpaqueKey(key)
+
+    return this.redisService.setMessage({
       key,
+      opaqueKey,
       val: messageDto.message,
       expInSeconds: diffInSeconds,
-    }) && this.redisService.set({
-      key: opaqueKey,
-      val: messageDto.message,
     })
   }
-
-  private generateOpaqueKey(key: string) {
-    return `opaque:${key}`
-  }
-
 }
