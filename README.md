@@ -23,7 +23,7 @@ $ npm run start:development
 
 # docker-compose
 $ docker-compose build
-$ docker-compose up -d
+$ docker-compose up
 ```
 
 ## Echo a message
