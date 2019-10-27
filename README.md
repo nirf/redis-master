@@ -29,7 +29,7 @@ $ docker-compose up
 ## Echo a message
 Open your browser and navigate to http://localhost:3000/redis-master/api/swagger
 
-## input example
+## Input example
 { <br>
   "time": 1572197700000, <br>
   "message": "Hello" <br>
