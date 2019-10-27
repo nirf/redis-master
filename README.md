@@ -8,7 +8,7 @@ A simple application server that prints a message at a given time in the future
 3. For each echo message a unique uuid 'x' is generated as the key while the message is the value. 
 4. Each uuid is backed by 'opaque:x' which is a reference to the same message without expiration.
 5. When an expire event is triggered, it receives as payload the key expired, to get the message an opaque key is generated to get the message, which is deleted after. 
-6. While the server is up again it checks to see if there exists and opaque:* message and echo them and delete them.
+6. In case the server was down when a message should have been printed, While the server is up again it checks to see if there exists and opaque:* message and echo them and delete them.
 7. The exp time is calculated by substracting the (future time - current time) in seconds
 
 
