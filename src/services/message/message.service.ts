@@ -9,12 +9,12 @@ export class MessageService {
   constructor(private readonly redisService: RedisService) {
   }
 
-  public echoAtTime(messageDto: MessageDto): boolean {
+  public async echoAtTime(messageDto: MessageDto): Promise<boolean> {
     const diffInSeconds = utils.getDateDiffInSeconds(new Date().getTime(), messageDto.time)
     const key = utils.generateUniqueUUID()
     const opaqueKey = utils.generateOpaqueKey(key)
 
-    return this.redisService.setMessage({
+    return await this.redisService.setMessage({
       key,
       opaqueKey,
       val: messageDto.message,

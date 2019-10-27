@@ -10,7 +10,7 @@ export class MessageController {
   }
 
   @Post('echoAtTime')
-  echoAtTime(@Body() messageDto: MessageDto): ServerResponse<boolean> {
+  async echoAtTime(@Body() messageDto: MessageDto): Promise<ServerResponse<boolean>> {
     try {
       const inputValidationResult = this.validateInput(messageDto)
       if (!inputValidationResult.valid) {
@@ -19,7 +19,7 @@ export class MessageController {
           msg: inputValidationResult.msg,
         }
       }
-      const res = this.messageService.echoAtTime(messageDto)
+      const res = await this.messageService.echoAtTime(messageDto)
       if (!res) {
         return {
           err: 1,
@@ -52,13 +52,13 @@ export class MessageController {
         msg: 'Message is a required input. please supply message, time',
       }
     }
-    if (!messageDto.message) {
+    if (!messageDto.message || messageDto.message.length < 1) {
       return {
         valid: false,
         msg: 'message is required',
       }
     }
-    if (!messageDto.time) {
+    if (!messageDto.time || messageDto.time < 0) {
       return {
         valid: false,
         msg: 'time is required',

@@ -3,6 +3,10 @@ import { ConfigService } from '../../config/config.service'
 import * as utils from '../../utils/utils'
 
 const redis = require('redis')
+const bluebird = require('bluebird')
+
+bluebird.promisifyAll(redis.RedisClient.prototype)
+bluebird.promisifyAll(redis.Multi.prototype)
 
 @Injectable()
 export class RedisService {
@@ -25,53 +29,59 @@ export class RedisService {
       console.log('Redis is connected')
     })
 
-    this.client.on('ready', () => {
+    this.client.on('ready', async () => {
       console.log('Redis is ready')
-      // setting Redis Keyspace Notifications which is disabled by default
-      // listen to
-      // E Keyevent events, published with __keyevent@<db>__ prefix.
-      // x Expired events (events generated every time a key expires)
       this.client.config('SET', 'notify-keyspace-events', 'Ex')
-      // lets check to see if there where message that should have been printed to screen
-      // while the server was down
-      this.client.keys('opaque:*', (err, keys) => {
-        if (keys && keys.length) {
-          for (const key of keys) {
-            this.getAndDelAndEchoMessage(key)
-          }
-        }
-      })
+      await this.echoMessagesWhileServerWasDown()
     })
 
-    this.subClient.on('pmessage', (pattern, channel, message) => {
+    this.subClient.on('pmessage', async (pattern, channel, message) => {
       const key = utils.generateOpaqueKey(message)
-      this.getAndDelAndEchoMessage(key)
+      await this.getAndDelAndEchoMessage(key)
     })
     // listen only to expired events
     this.subClient.psubscribe('__keyevent@0__:expired')
   }
 
-  public getAndDelAndEchoMessage(key) {
-    this.client.multi()
-      .get(key)
-      .del(key)
-      .exec((err, reply) => {
-        console.log('Echo Message:', reply[0])
-      })
-  }
-
-  public setMessage(input: {
+  public async setMessage(input: {
     key: string,
     opaqueKey: string,
     val: string,
     expInSeconds: number
-  }): boolean {
-    this.client.multi()
-      .set(input.key, input.val, 'EX', input.expInSeconds)
-      .set(input.opaqueKey, input.val)
-      .exec()
+  }): Promise<boolean> {
+    try {
+      await this.client.multi()
+        .set(input.key, input.val, 'EX', input.expInSeconds)
+        .set(input.opaqueKey, input.val)
+        .execAsync()
 
-    return true
+      return true
+    } catch (e) {
+      return false
+    }
   }
 
+  private async getAndDelAndEchoMessage(key) {
+    const result = await this.client.multi()
+      .get(key)
+      .del(key)
+      .execAsync()
+
+    console.log('Echo Message:', result[0])
+  }
+
+  private async echoMessagesWhileServerWasDown() {
+    const keys = await this.client.keysAsync('opaque:*')
+    if (keys && keys.length) {
+      const promises = []
+      for (const key of keys) {
+        const promise = this.getAndDelAndEchoMessage(key)
+        promises.push(promise)
+      }
+
+      await Promise.all(promises)
+
+    }
+
+  }
 }
