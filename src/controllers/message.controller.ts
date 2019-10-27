@@ -1,6 +1,7 @@
 import { Body, Controller, Post } from '@nestjs/common'
 import { MessageDto, ServerResponse } from '../common/common'
 import { MessageService } from '../services/message/message.service'
+import * as utils from '../utils/utils'
 
 @Controller('messages')
 export class MessageController {
@@ -11,7 +12,13 @@ export class MessageController {
   @Post('echoAtTime')
   echoAtTime(@Body() messageDto: MessageDto): ServerResponse<boolean> {
     try {
-      // TODO: validate input and decide on time format
+      const inputValidationResult = this.validateInput(messageDto)
+      if (!inputValidationResult.valid) {
+        return {
+          err: 1,
+          msg: inputValidationResult.msg,
+        }
+      }
       const res = this.messageService.echoAtTime(messageDto)
       if (!res) {
         return {
@@ -23,15 +30,50 @@ export class MessageController {
       return {
         err: 0,
         msg: 'Wrote message successfully',
-        data: res
+        data: res,
       }
 
     } catch (e) {
-
+      console.error(e.message, e.stack)
       return {
         err: 1,
         msg: 'Something went wrong, please try again',
       }
+    }
+  }
+
+  private validateInput(messageDto: MessageDto): {
+    valid: boolean,
+    msg?: string
+  } {
+    if (!messageDto) {
+      return {
+        valid: false,
+        msg: 'Message is a required input. please supply message, time',
+      }
+    }
+    if (!messageDto.message) {
+      return {
+        valid: false,
+        msg: 'message is required',
+      }
+    }
+    if (!messageDto.time) {
+      return {
+        valid: false,
+        msg: 'time is required',
+      }
+    }
+    const diffInSeconds = utils.getDateDiffInSeconds(new Date().getTime(), messageDto.time)
+    if (diffInSeconds <= 0) {
+      return {
+        valid: false,
+        msg: 'please supply a valid time in the future',
+      }
+    }
+
+    return {
+      valid: true,
     }
   }
 }
